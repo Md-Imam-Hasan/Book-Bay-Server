@@ -11,8 +11,6 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 app.use(cors())
 app.use(bodyParser.json())
 
-
-
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
   const bookCollection = client.db("bookStore").collection("books");
@@ -34,10 +32,17 @@ client.connect(err => {
 
   app.get('/book/:id',(req,res)=>{
     const id = ObjectID(req.params.id)
-    bookCollection.find({_id: id})
+    bookCollection.find({_id: ObjectID(id)})
     .toArray((err,documents)=>{
       res.send(documents[0]);
     })
+  })
+
+  app.delete('/delete/:id', (req, res) => {
+    bookCollection.deleteOne({ _id: ObjectID(req.params.id) })
+      .then(result => {
+        res.send(result.deletedCount>0)
+      })
   })
 });
 
