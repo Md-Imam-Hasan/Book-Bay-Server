@@ -14,34 +14,50 @@ app.use(bodyParser.json())
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
   const bookCollection = client.db("bookStore").collection("books");
-  
-  app.post('/addBook',(req,res)=>{
+  const orderCollection = client.db("bookStore").collection("orders");
+
+  app.post('/addBook', (req, res) => {
     bookCollection.insertOne(req.body)
-    .then(result=>{
-      console.log(result);
-      res.send(result.insertedCount>0)
-    })
+      .then(result => {
+        console.log(result);
+        res.send(result.insertedCount > 0)
+      })
   })
 
-  app.get('/allBook',(req,res)=>{
+  app.post('/addOrder', (req, res) => {
+    orderCollection.insertOne(req.body)
+      .then(result => {
+        res.send(result.insertedCount > 0)
+      })
+  })
+
+  app.get('/allBook', (req, res) => {
     bookCollection.find({})
-    .toArray((err,documents)=>{
-      res.send(documents);
-    })
+      .toArray((err, documents) => {
+        res.send(documents);
+      })
   })
 
-  app.get('/book/:id',(req,res)=>{
+  app.get('/book/:id', (req, res) => {
     const id = ObjectID(req.params.id)
-    bookCollection.find({_id: ObjectID(id)})
-    .toArray((err,documents)=>{
-      res.send(documents[0]);
-    })
+    bookCollection.find({ _id: ObjectID(id) })
+      .toArray((err, documents) => {
+        res.send(documents[0]);
+      })
+  })
+
+  app.get('/orders', (req, res) => {
+    const queryEmail = req.query.email;
+    orderCollection.find({ email: queryEmail })
+      .toArray((err, documents) => {
+        res.send(documents);
+      })
   })
 
   app.delete('/delete/:id', (req, res) => {
     bookCollection.deleteOne({ _id: ObjectID(req.params.id) })
       .then(result => {
-        res.send(result.deletedCount>0)
+        res.send(result.deletedCount > 0)
       })
   })
 });
